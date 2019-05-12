@@ -5,7 +5,7 @@ import (
 	"go-common/handlers"
 )
 
-const ServerPort = "3001"
+const ServerPort = "3002"
 
 func main() {
 
