@@ -4,12 +4,12 @@ import (
 	"encoding/xml"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"go-common/pkg/wechat"
 	"io/ioutil"
 	"net/http"
+	"wechat-bind/pkg/wechat"
 )
 
-func Handler(router *gin.RouterGroup){
+func Handler(router *gin.RouterGroup) {
 
 	route := router.Group("/wechat")
 	route.GET("", GET)
@@ -17,7 +17,7 @@ func Handler(router *gin.RouterGroup){
 
 }
 
-func GET(ctx *gin.Context){
+func GET(ctx *gin.Context) {
 	// 处理 GET - /wechat 请求
 
 	echostr := ctx.Query("echostr")
@@ -31,17 +31,15 @@ func GET(ctx *gin.Context){
 }
 
 type wxMsg struct {
-
-	ToUserName string
+	ToUserName   string
 	FromUserName string
-	CreateTime string
-	MsgType string
-	Content string
-	MsgId string
-
+	CreateTime   string
+	MsgType      string
+	Content      string
+	MsgId        string
 }
 
-func POST(ctx *gin.Context){
+func POST(ctx *gin.Context) {
 	// 处理 POST - /wechat 请求
 
 	if !wechat.CheckWechatSignature(ctx) {
@@ -59,5 +57,5 @@ func POST(ctx *gin.Context){
 	openid := ctx.Query("openid")
 	ctx.String(http.StatusOK, "success")
 
-	wechat.SendCustomTextMsg(openid, "🤬")
+	wechat.SendCustomTextMsg(ctx, openid, "🤬")
 }

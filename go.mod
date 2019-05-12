@@ -1,4 +1,4 @@
-module go-common
+module wechat-bind
 
 go 1.12
 

@@ -3,33 +3,37 @@ package wechat
 import (
 	JSON "encoding/json"
 	"fmt"
-	"go-common/secret"
+	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"io/ioutil"
 	"net/http"
 	"time"
+	"wechat-bind/secret"
 )
 
-func GetAccessToken() string {
+func GetAccessToken(ctx *gin.Context) string {
 
-	if time.Now().Unix() >= secret.WechatAccessTokenWExpires {
+	db := ctx.MustGet("db").(*mongo.Database)
 
+	accessTokenStruct := struct {
+		AccessToken string `bson:"accessToken" json:"access_token"`
+		ExpiresTime int64  `bson:"expiresTime" json:"expires_in"`
+	}{}
+
+	err := db.Collection("accessToken").FindOne(ctx, bson.M{}).Decode(&accessTokenStruct)
+
+	if err == mongo.ErrNoDocuments || time.Now().Unix() >= accessTokenStruct.ExpiresTime {
+		// 不存在accessToken或者过期
 		url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=%s&secret=%s", secret.WechatAppId, secret.WechatAppSecret)
 		res, _ := http.Get(url)
 		wxRespBody, _ := ioutil.ReadAll(res.Body)
-
-		wxRespJSON := &struct {
-			AccessToken string `json:"access_token"`
-			ExpiresIn int64 `json:"expires_in"`
-		}{}
-
-		_ = JSON.Unmarshal(wxRespBody, &wxRespJSON)
-
-		secret.WechatAccessToken = wxRespJSON.AccessToken
-
-		secret.WechatAccessTokenWExpires = time.Now().Unix() + wxRespJSON.ExpiresIn
-
+		_ = JSON.Unmarshal(wxRespBody, &accessTokenStruct)
+		accessTokenStruct.ExpiresTime = accessTokenStruct.ExpiresTime + time.Now().Unix()
+		_, _ = db.Collection("accessToken").DeleteMany(ctx, bson.M{})
+		_, _ = db.Collection("accessToken").InsertOne(ctx, accessTokenStruct)
 	}
 
-	return secret.WechatAccessToken
+	return accessTokenStruct.AccessToken
 
 }
