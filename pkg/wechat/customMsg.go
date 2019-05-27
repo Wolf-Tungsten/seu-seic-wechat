@@ -1,17 +1,32 @@
 package wechat
 
 import (
-	"bytes"
+	JSON "encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/json"
+	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 func SendCustomTextMsg(ctx *gin.Context, openid string, text string) {
-	body, _ := json.Marshal(map[string]interface{}{"touser": openid,
+	bodyBytes, _ := json.Marshal(map[string]interface{}{"touser": openid,
 		"msgtype": "text",
 		"text":    map[string]string{"content": text}})
+	body := string(bodyBytes)
+	body = strings.Replace(body, "\\u003c", "<", -1)
+	body = strings.Replace(body, "\\u003e", ">", -1)
+	body = strings.Replace(body, "\\u0026", "&", -1)
+	fmt.Println(body)
 	url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=%s", GetAccessToken(ctx))
-	_, _ = http.Post(url, "applicant/json", bytes.NewReader(body))
+	res, _ := http.Post(url, "application/json", strings.NewReader(body))
+	wxRespBody, _ := ioutil.ReadAll(res.Body)
+	wxRespBodyStruct := struct {
+		Errcode int `json:"errcode"`
+	}{}
+	_ = JSON.Unmarshal(wxRespBody, &wxRespBodyStruct)
+	if wxRespBodyStruct.Errcode != 0 {
+		fmt.Println(string(wxRespBody))
+	}
 }

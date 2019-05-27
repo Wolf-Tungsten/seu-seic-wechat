@@ -37,6 +37,8 @@ type wxMsg struct {
 	MsgType      string
 	Content      string
 	MsgId        string
+	Event        string
+	EventKey     string
 }
 
 func POST(ctx *gin.Context) {
@@ -57,5 +59,11 @@ func POST(ctx *gin.Context) {
 	openid := ctx.Query("openid")
 	ctx.String(http.StatusOK, "success")
 
-	wechat.SendCustomTextMsg(ctx, openid, "🤬")
+	if msg.MsgType == "event" && msg.Event == "CLICK" {
+		wechat.SendCustomTextMsg(ctx, openid, msg.EventKey)
+	}
+
+	if msg.MsgType == "text" {
+		wechat.SendCustomTextMsg(ctx, openid, msg.Content)
+	}
 }
