@@ -2,12 +2,12 @@ package web
 
 import (
 	"github.com/gin-gonic/gin"
-	"wechat-bind/handlers/web/user"
+	"wechat-bind/handlers/web/login"
 )
 
 func Handler(router *gin.RouterGroup) {
 
 	route := router.Group("/web")
-	user.Handler(route)
+	login.Handler(route)
 
 }

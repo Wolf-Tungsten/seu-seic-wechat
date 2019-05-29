@@ -1,5 +1,10 @@
 package middleware
 
+import (
+	"github.com/gin-gonic/gin"
+	"net/http"
+)
+
 func Cors(c *gin.Context) {
 
 	method := c.Request.Method
