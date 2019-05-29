@@ -64,6 +64,6 @@ func POST(ctx *gin.Context) {
 	}
 
 	if msg.MsgType == "text" {
-		wechat.SendCustomTextMsg(ctx, openid, msg.Content)
+		wechat.SendCustomTextMsg(ctx, openid, "<a href=\"https://myseu.cn\">打开小猴偷米</a>")
 	}
 }

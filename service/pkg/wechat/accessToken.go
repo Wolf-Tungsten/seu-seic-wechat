@@ -24,8 +24,8 @@ func GetAccessToken(ctx *gin.Context) string {
 	}{}
 
 	err := db.Collection("accessToken").FindOne(ctx, bson.M{}).Decode(&accessTokenStruct)
-
-	if err == mongo.ErrNoDocuments {
+	now := time.Now().Unix()
+	if err == mongo.ErrNoDocuments || accessTokenStruct.ExpiresTime < now {
 		// 不存在accessToken或者过期
 		fmt.Println("更新accessToken")
 		url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=%s&secret=%s", secret.WechatAppId, secret.WechatAppSecret)
