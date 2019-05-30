@@ -14,6 +14,7 @@ func Handler(router *gin.RouterGroup) {
 	route := router.Group("/admin")
 	route.GET("", GET)
 	route.POST("", POST)
+	route.DELETE("", DELETE)
 
 }
 
@@ -66,7 +67,7 @@ func POST(ctx *gin.Context) {
 	switch upsert.ModifiedCount {
 	case 0:
 		{
-			pkg.Return(ctx, 400, "用户不存在")
+			pkg.Return(ctx, 400, "用户不存在/重复设置")
 		}
 	case 1:
 		{
