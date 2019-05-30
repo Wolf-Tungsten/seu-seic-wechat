@@ -48,9 +48,9 @@ export default {
                 this.loading = false
                 return
             }
-            let res = this.$api.post('/login', {name:this.name, cardnum:this.cardnum, phoneNumber:this.phoneNumber})
+            let res = await this.$api.post('/login', {name:this.name, cardnum:this.cardnum, phoneNumber:this.phoneNumber})
             if(res.data.success){
-                // TODO: 跳转到正式业务页面
+                this.$router.replace('/'+this.$route.params.page)
             }
         }
     },
@@ -62,6 +62,9 @@ export default {
         if(res.data.success){
             this.$setSessionToken(res.data.result.sessionToken)
             this.needUserInfo = res.data.result.needUserInfo
+            if(!this.needUserInfo){
+                this.$router.replace('/'+this.$route.params.page)
+            }
         } else {
             this.$router.replace('/error')
         }

@@ -4,9 +4,14 @@ import (
 	"encoding/xml"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"wechat-bind/models"
 	"wechat-bind/pkg/wechat"
+	"wechat-bind/secret"
 )
 
 func Handler(router *gin.RouterGroup) {
@@ -64,6 +69,30 @@ func POST(ctx *gin.Context) {
 	}
 
 	if msg.MsgType == "text" {
-		wechat.SendCustomTextMsg(ctx, openid, "<a href=\"https://myseu.cn\">打开小猴偷米</a>")
+		switch msg.Content {
+		case "初始化管理员":
+			{
+				initSuperAdmin(ctx, openid)
+			}
+
+		}
+	}
+}
+
+// 初始化超级管理员
+
+func initSuperAdmin(ctx *gin.Context, openid string) {
+	db := ctx.MustGet("db").(*mongo.Database)
+	superAdminCount, _ := db.Collection("user").CountDocuments(ctx, bson.M{"adminLevel": -1})
+	if superAdminCount != 0 {
+		wechat.SendCustomTextMsg(ctx, openid, "无权操作")
+	} else {
+		// 说明没有超级管理员
+		// 删除该用户已有记录
+		_, _ = db.Collection("user").DeleteMany(ctx, bson.M{"openId": openid})
+		// 创建一个新记录
+		_, _ = db.Collection("user").InsertOne(ctx, models.User{OpenId: openid, AdminLevel: -1})
+		wechat.SendCustomTextMsg(ctx, openid, "您已成为该系统管理员！")
+		wechat.SendCustomTextMsg(ctx, openid, fmt.Sprintf("<a href=\"https://open.weixin.qq.com/connect/oauth2/authorize?appid=%s&redirect_uri=%s/login/admin&response_type=code&scope=snsapi_base#wechat_redirect\">设置其他管理人员</a>", secret.WechatAppId, os.Getenv("HOMEPAGE")))
 	}
 }

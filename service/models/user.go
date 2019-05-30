@@ -9,4 +9,5 @@ type User struct {
 	OpenId       string             `bson:"openId"`
 	Name         string             `bson:"name"`
 	Cardnum      string             `bson:"cardnum"`
+	AdminLevel   int64              `bson:"adminLevel"`
 }
