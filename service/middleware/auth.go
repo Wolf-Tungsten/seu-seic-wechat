@@ -9,7 +9,7 @@ import (
 )
 
 func AuthMiddleware(c *gin.Context) {
-	token := c.Request.Header.Get("session-token")
+	token := c.Request.Header.Get("token")
 	db := c.MustGet("db").(*mongo.Database)
 	// 如果token存在则进行权限鉴定
 	if token != "" {

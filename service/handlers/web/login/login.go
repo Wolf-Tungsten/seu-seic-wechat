@@ -100,5 +100,24 @@ func GET(ctx *gin.Context) {
  * @apiParam {String} cardnum 一卡通号
  */
 func POST(ctx *gin.Context) {
+	requestBody := struct {
+		Cardnum string `json:"cardnum"`
+		Name    string `json:"name"`
+	}{}
 
+	db := ctx.MustGet("db").(*mongo.Database)
+
+	_ = ctx.BindJSON(&requestBody)
+
+	if requestBody.Cardnum == "" || requestBody.Name == "" {
+		pkg.Return(ctx, 400, "字段不完整")
+		return
+	}
+
+	token := ctx.Request.Header.Get("token")
+
+	r, _ := db.Collection("user").UpdateOne(ctx, bson.M{"sessionToken": token}, bson.M{"$set": bson.M{"cardnum": requestBody.Cardnum, "name": requestBody.Name}})
+
+	fmt.Println(r.ModifiedCount)
+	pkg.Return(ctx, 200, "ok")
 }

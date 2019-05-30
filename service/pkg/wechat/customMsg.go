@@ -4,14 +4,13 @@ import (
 	JSON "encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/json"
 	"io/ioutil"
 	"net/http"
 	"strings"
 )
 
 func SendCustomTextMsg(ctx *gin.Context, openid string, text string) {
-	bodyBytes, _ := json.Marshal(map[string]interface{}{"touser": openid,
+	bodyBytes, _ := JSON.Marshal(map[string]interface{}{"touser": openid,
 		"msgtype": "text",
 		"text":    map[string]string{"content": text}})
 	body := string(bodyBytes)
